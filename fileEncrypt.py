@@ -6,7 +6,7 @@ from cryptography.hazmat.backends import default_backend
 
 CONST_KEY_BYTES = 32
 CONST_IV_BYTES = 16
-CONST_FILE_PATH = "picture.jpeg"
+CONST_FILE_PATH = "picture.jpg"
 
 def main():
 	# Creates a random string of 32 bytes
@@ -17,6 +17,7 @@ def main():
 	plainText = myDecrypt(cipherText, key, IV)
 	print("Plain Text: ", plainText)
 
+	myFileEncrypt(CONST_FILE_PATH)
 
 # Encrypts a message using a random key generated from the OS
 def myEncrypt(message, key):
@@ -31,15 +32,11 @@ def myEncrypt(message, key):
 	# Here we set the parameters for the encryptor
 	# We use AES and CBC
 	encryptor = Cipher(algorithms.AES(key), modes.CBC(iv), backend = default_backend()).encryptor()
-
 	# Encode the message to base64
 	encoded = base64.b64encode(message)
 
-	# TAKEN FROM https://stackoverflow.com/questions/14179784/python-encrypting-with-pycrypto-aes/14205319#14205319
-	# AES requires plain text and ciphertext to be a multiple of 16
-	# We pad it so that the message is a multiple of the IV, 16
-	length = CONST_IV_BYTES - (len(encoded) % CONST_IV_BYTES)
-	encoded += bytes([length])*length
+	encoded = addPadding(encoded)
+
 
 	# We encrypt the message
 	cipherText = encryptor.update(encoded) + encryptor.finalize()
@@ -58,34 +55,50 @@ def myDecrypt(cipherText, key, iv):
 	# The cipherText gets decrypted but it is still encoded
 	encoded = decryptor.update(cipherText) + decryptor.finalize()
 
-	# TAKEN FROM https://stackoverflow.com/questions/14179784/python-encrypting-with-pycrypto-aes/14205319#14205319
-	# Here we remove the padding
-	decoded = encoded[:-encoded[-1]]
+	# Removes padding 
+	encoded = removePadding(encoded)
 
 	# We decode from base64
-	plainText = base64.b64decode(decoded)
+	plainText = base64.b64decode(encoded)
 
 	# Return the plaintext
 	return plainText
 
 
-# def myFileEncrypt(filepath):
+def myFileEncrypt(filepath):
+	key = os.urandom(CONST_KEY_BYTES)
+	fileName, fileExt = os.path.splitext(filepath)
+	print(fileExt)
+	with open(filepath, "rb") as file:
+		file_string = file.read()
+
+	cipherFile, iv = myEncrypt(file_string, key)
+
+	return (cipherFile, iv, key, fileExt)
+
 
 # def myFileDecrypt(filepath, key):
 
 
+# AES requires plain text and ciphertext to be a multiple of 16
+# We pad it so that the message is a multiple of the IV, 16
+def addPadding(encoded):
+	# TAKEN FROM https://stackoverflow.com/questions/14179784/python-encrypting-with-pycrypto-aes/14205319#14205319
+	length = CONST_IV_BYTES - (len(encoded) % CONST_IV_BYTES)
+	encoded += bytes([length])*length
+	return encoded
+
+
+# Here we remove the padding
+def removePadding(encoded):
+	# TAKEN FROM https://stackoverflow.com/questions/14179784/python-encrypting-with-pycrypto-aes/14205319#14205319
+	encoded = encoded[:-encoded[-1]]
+	
+	return encoded
+
 main()
 
 
-# backend = default_backend()
-# key = os.urandom(32)
-# iv = os.urandom(16)
-# cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=backend)
-# encryptor = cipher.encryptor()
-# ct = encryptor.update(b"a secret message") + encryptor.finalize()
-# decryptor = cipher.decryptor()
-# decryptor.update(ct) + decryptor.finalize()
-# b'a secret message'
 
 
 # (C, IV)= Myencrypt(message, key):
