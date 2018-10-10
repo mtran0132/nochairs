@@ -13,7 +13,6 @@ CWD_PATH = os.getcwd()
 
 
 def main():
-	print(CWD_PATH)
 	# Creates a random string of 32 bytes
 	key = os.urandom(CONST_KEY_BYTES)
 	message = b"This is a secret message. ATTACK AT DAWN FROM THE NORTH."
@@ -22,14 +21,24 @@ def main():
 	print("Cipher Text: ", cipherText, "\n")
 	plainText = myDecrypt(cipherText, key, IV)
 	print("Plain Text: ", plainText,"\n")
+	print("----------------------------------------------")
+	print("DO NOT CHOOSE A FILE THAT IS IMPORTANT!!!!!!!")
+	print("DO NOT CHOOSE A FILE THAT IS IMPORTANT!!!!!!!")
+	print("DO NOT CHOOSE A FILE THAT IS IMPORTANT!!!!!!!")
+	print("----------------------------------------------")
 
 	fileChoice = input("Which file to encrypt? Otherwise, 'exit' to exit: ")
 	while(fileChoice != "exit"):
-		(fileCipherText, fileIv, fileKey, fileExt) = myFileEncrypt(fileChoice)
-		dummy_text = input("Check the file to see if it is encrypted!\nThen press enter\n")
-		myFileDecrypt(CONST_FILE_PATH, fileKey, fileIv)
-		fileChoice = input("Which file to encrypt? Otherwise, 'exit' to exit: ")
-		
+		# Makes an absolute path to the file
+		inFile = os.path.join(CWD_PATH,fileChoice)
+		if(fileCheck(inFile)):
+			(fileCipherText, fileIv, fileKey, fileExt) = myFileEncrypt(fileChoice)
+			dummy_text = input("Check the file to see if it is encrypted!\nThen press enter\n")
+			myFileDecrypt(fileChoice, fileKey, fileIv)
+			fileChoice = input("Which file to encrypt? Otherwise, 'exit' to exit: ")
+
+		else:
+			fileChoice = input("Which file to encrypt? Otherwise, 'exit' to exit: ")
 
 
 # Encrypts a message using a random key generated from the OS
@@ -47,9 +56,7 @@ def myEncrypt(message, key):
 	encryptor = Cipher(algorithms.AES(key), modes.CBC(iv), backend = default_backend()).encryptor()
 	# Encode the message to base64
 	encoded = base64.b64encode(message)
-
 	encoded = addPadding(encoded)
-
 
 	# We encrypt the message
 	cipherText = encryptor.update(encoded) + encryptor.finalize()
@@ -64,7 +71,7 @@ def myDecrypt(cipherText, key, iv):
 
 	# Here we set the parameters for the decryptor	
 	decryptor = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend()).decryptor()
-
+	print(len(cipherText))
 	# The cipherText gets decrypted but it is still encoded
 	encoded = decryptor.update(cipherText) + decryptor.finalize()
 
@@ -109,8 +116,9 @@ def myFileEncrypt(fileName):
 			file.write(cipherFile)
 			file.close()
 
-	# Not sure why we are returning all this
-	return (cipherFile, iv, key, fileExt)
+		# Not sure why we are returning all this
+		return (cipherFile, iv, key, fileExt)
+
 
 # Given the same file you want to decrypt and the same key and IV used to encrypt
 def myFileDecrypt(fileName, key, iv):
@@ -159,7 +167,7 @@ def fileCheck(file):
 		open(file, "r")
 		return True
 	except IOError:
-		print("Can't find file: \n" + file + "\nMoving on...\n")
+		print("Can't find file: \n" + file + "\nTry again...\n")
 		return False
 
 
