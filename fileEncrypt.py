@@ -71,7 +71,6 @@ def myDecrypt(cipherText, key, iv):
 
 	# Here we set the parameters for the decryptor	
 	decryptor = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend()).decryptor()
-	print(len(cipherText))
 	# The cipherText gets decrypted but it is still encoded
 	encoded = decryptor.update(cipherText) + decryptor.finalize()
 
