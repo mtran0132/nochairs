@@ -161,3 +161,11 @@ def removePadding(padded_encoded):
 	return unpadded_encoded
 
 main()
+
+# Step 2:
+# Modify your File Encryption to include the policy of Encrypt-then-MAC for every encryption.
+# (C, IV, tag)= MyencryptMAC(message, EncKey, HMACKey)
+# (C, IV, tag, Enckey, HMACKey, ext)= MyfileEncryptMAC (filepath)
+# You will be asked to encrypt a JPEG file and then decrypt it and make sure you still can view the image.
+# You can use SHA256 in your HMAC.
+# Make sure to use github to commit and push all of your code so the instructor can see your source.
