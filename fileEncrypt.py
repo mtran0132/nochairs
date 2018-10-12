@@ -29,6 +29,7 @@ def main():
 			(fileCipherText, fileIv, fileKey, fileExt) = myFileEncrypt(fileChoice)
 			dummy_text = input("Check the file to see if it is encrypted!\nThen press enter\n")
 			myFileDecrypt(fileChoice, fileKey, fileIv)
+			print("File should be decrypted now")
 			fileChoice = input("Which file to encrypt? Otherwise, 'exit' to exit: ")
 
 		else:
