@@ -138,7 +138,7 @@ def myFileDecrypt(fileName, key, iv):
 def addPadding(encoded):
 	
 	# We pad it with 128 bits or 16 bytes
-	padder = padding.PKCS7(128).padder()
+	padder = padding.PKCS7(constants.CONST_PADDING_BITS).padder()
 
 	# update() pads the encoded message
 	padded_encoded = padder.update(encoded)
@@ -152,7 +152,7 @@ def addPadding(encoded):
 def removePadding(padded_encoded):
 
 	# We unpad it using 128 bits or 16 bytes
-	unpadder = padding.PKCS7(128).unpadder()
+	unpadder = padding.PKCS7(constants.CONST_PADDING_BITS).unpadder()
 
 	# update() unpads the padded encoded message
 	unpadded_encoded = unpadder.update(padded_encoded)
