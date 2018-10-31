@@ -3,13 +3,17 @@
 # So that you can encrypt the file, exit the program, then run it again to decrypt it.
 # TO DO: Add error/exception handling
 
-import os, base64, constants, encryption, decryption
+import os, base64, constants, encryption, decryption, rsakeys
 
 def main():
 	# Creates random 32 bytes
 	encKey = os.urandom(constants.CONST_KEY_BYTES)
 	hmacKey = os.urandom(constants.CONST_HMACKEY_BYTES)
 
+	#rsakeys.createKeyPair(os.getcwd())
+	(RSACipher, cipherFile, iv, tag, fileExt) = encryption.myRSAEncrypt("hello.txt","public_key")
+	pause = input("Enter when finished")
+	decryption.myRSADecrypt(RSACipher,"hello.txt",iv,tag,fileExt,"private_key")
 	message = b"This is a secret message. ATTACK AT DAWN FROM THE NORTH."
 	print("Original Message: ", message,"\n")
 	
@@ -33,6 +37,9 @@ def main():
 	print("DO NOT CHOOSE A FILE THAT IS IMPORTANT!!!!!!!")
 	print("DO NOT CHOOSE A FILE THAT IS IMPORTANT!!!!!!!")
 	print("DO NOT CHOOSE A FILE THAT IS IMPORTANT!!!!!!!")
+	print("DO NOT CLOSE THE PROGRAM UNTIL CHOSEN FILE IS DECRYPTED!!!!!!!")
+	print("DO NOT CLOSE THE PROGRAM UNTIL CHOSEN FILE IS DECRYPTED!!!!!!!")
+	print("DO NOT CLOSE THE PROGRAM UNTIL CHOSEN FILE IS DECRYPTED!!!!!!!")
 	print("----------------------------------------------")			
 	print("File Encryption with HMAC")
 	fileChoice = input("Which file to encrypt? Otherwise, 'exit' to exit: ")
@@ -50,29 +57,5 @@ def main():
 		else:
 			print("File doesn't exist, try again")
 			fileChoice = input("Which file to encrypt? Otherwise, 'exit' to exit: ")
-
-
-	# print("----------------------------------------------")
-	# print("DO NOT CHOOSE A FILE THAT IS IMPORTANT!!!!!!!")
-	# print("DO NOT CHOOSE A FILE THAT IS IMPORTANT!!!!!!!")
-	# print("DO NOT CHOOSE A FILE THAT IS IMPORTANT!!!!!!!")
-	# print("----------------------------------------------")
-
-
-	# print("File Encryption")
-	# fileChoice = input("Which file to encrypt? Otherwise, 'exit' to exit: ")
-	# while(fileChoice != "exit"):
-
-	# 	if(os.path.isfile(fileChoice)):
-
-	# 		(fileCipherText, fileIv, fileKey, fileExt) = encryption.myFileEncrypt(fileChoice)
-	# 		dummy_text = input("Check the file to see if it is encrypted!\nThen press enter\n")
-	# 		decryption.myFileDecrypt(fileChoice, fileKey, fileIv)
-	# 		print("File should be decrypted now")
-	# 		fileChoice = input("Which file to encrypt? Otherwise, 'exit' to exit: ")
-
-	# 	else:
-	# 		print("File doesn't exist, try again")
-	# 		fileChoice = input("Which file to encrypt? Otherwise, 'exit' to exit: ")
 
 main()

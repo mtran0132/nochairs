@@ -1,9 +1,7 @@
-import os, base64, constants
+import os, base64, constants, rsakeys
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import padding
-from cryptography.hazmat.primitives import hashes, hmac
-
+from cryptography.hazmat.primitives import padding, hashes, hmac, serialization, asymmetric
 # Encrypts a message using a random key generated from the OS
 def myEncrypt(message, key):
 
@@ -33,13 +31,13 @@ def myEncrypt(message, key):
 
 # Do not use the same key twice
 # HMAC key should equal length to the digest_size
-def myEncryptMAC(message, EncKey, HmacKey):
+def myEncryptMAC(message, enc_key, hmac_key):
 
-	if(len(EncKey) < constants.CONST_KEY_BYTES):
+	if(len(enc_key) < constants.CONST_KEY_BYTES):
 		print("Error: key length less than 32 bytes")
 		return
 	
-	if(len(HmacKey) < constants.CONST_HMACKEY_BYTES):
+	if(len(hmac_key) < constants.CONST_HMACKEY_BYTES):
 		print("Error: HMAC Key length less than 32 bytes")
 		return
 
@@ -50,7 +48,7 @@ def myEncryptMAC(message, EncKey, HmacKey):
 	# Here we set the parameters for the encryptor
 	# We use AES and CBC
 	encryptor = Cipher(
-				algorithms.AES(EncKey),
+				algorithms.AES(enc_key),
 				modes.CBC(iv),
 				backend = default_backend()
 				).encryptor()
@@ -64,7 +62,7 @@ def myEncryptMAC(message, EncKey, HmacKey):
 	cipherText = encryptor.update(encoded) + encryptor.finalize()
 
 	# After we encrypt it, we can make hash-based message authenication codes
-	h = hmac.HMAC(HmacKey, hashes.SHA256(), backend = default_backend())
+	h = hmac.HMAC(hmac_key, hashes.SHA256(), backend = default_backend())
 	h.update(cipherText)
 	tag = h.finalize()
 
@@ -72,19 +70,19 @@ def myEncryptMAC(message, EncKey, HmacKey):
 
 
 # Given a file within the same working directory it will encrypt it
-def myFileEncrypt(fileName):
+def myFileEncrypt(filepath):
 
 	# Checks if file exists
-	if(os.path.isfile(fileName)):
+	if(os.path.isfile(filepath)):
 	
 		# Makes a 32 byte key
 		key = os.urandom(constants.CONST_KEY_BYTES)
 		
 		# Splits the file name and file extension
-		fileLabel, fileExt = os.path.splitext(fileName)
+		fileLabel, fileExt = os.path.splitext(filepath)
 		
 		# Opens the file to read it as binary
-		with open(fileName, "rb") as file:
+		with open(filepath, "rb") as file:
 			file_string = file.read()
 
 			# Encrypts the file_string using the key
@@ -92,50 +90,72 @@ def myFileEncrypt(fileName):
 			cipherFile, iv = myEncrypt(file_string, key)
 		
 		# Opens the file to overwrite it as binary
-		with open(fileName, "wb") as file:
+		with open(filepath, "wb") as file:
 
 			# Overwrites whatever is inside with the encrypted encoded cipherFile
 			file.write(cipherFile)
 			file.close()
 
-		# Not sure why we are returning all this
 		return (cipherFile, iv, key, fileExt)
 
 
-def myFileEncryptMAC(fileName):
+def myFileEncryptMAC(filepath):
 
 	# Checks if file exists
-	if(os.path.isfile(fileName)):
+	if(os.path.isfile(filepath)):
 	
 		# Makes a 32 byte key
-		EncKey = os.urandom(constants.CONST_KEY_BYTES)
-		HmacKey = os.urandom(constants.CONST_HMACKEY_BYTES)	
+		enc_key = os.urandom(constants.CONST_KEY_BYTES)
+		hmac_key = os.urandom(constants.CONST_HMACKEY_BYTES)	
 		
 		# Splits the file name and file extension
-		fileLabel, fileExt = os.path.splitext(fileName)
+		fileLabel, fileExt = os.path.splitext(filepath)
 		
 		# Opens the file to read it as binary
-		with open(fileName, "rb") as file:
+		with open(filepath, "rb") as file:
 			file_string = file.read()
 
 			# Encrypts the file_string using the key
 			# returns the encrypted file as encoded cipherFile and iv
-			cipherFile, iv = myEncrypt(file_string, EncKey)
+			cipherFile, iv = myEncrypt(file_string, enc_key)
 		
 		# Opens the file to overwrite it as binary
-		with open(fileName, "wb") as file:
+		with open(filepath, "wb") as file:
 
 			# Overwrites whatever is inside with the encrypted encoded cipherFile
 			file.write(cipherFile)
 			file.close()
 
 		# After we encrypt it, we can make hash-based message authenication codes
-		h = hmac.HMAC(HmacKey, hashes.SHA256(), backend = default_backend())
+		h = hmac.HMAC(hmac_key, hashes.SHA256(), backend = default_backend())
 		h.update(cipherFile)
 		tag = h.finalize()
 
-		# Not sure why we are returning all this
-		return (cipherFile, iv, tag, EncKey, HmacKey, fileExt)
+		return (cipherFile, iv, tag, enc_key, hmac_key, fileExt)
+
+
+def myRSAEncrypt(filepath, RSA_Publickey_filepath):
+
+	(cipherFile, iv, tag, enc_key, hmac_key, fileExt) = myFileEncryptMAC(filepath)
+	
+	key = enc_key + hmac_key
+
+	with open(RSA_Publickey_filepath, 'rb') as key_file:
+		public_key = serialization.load_pem_public_key(
+			key_file.read(),
+			backend = default_backend()
+			)
+
+		RSACipher = public_key.encrypt(
+			key,
+			asymmetric.padding.OAEP(
+				mgf=asymmetric.padding.MGF1(algorithm=hashes.SHA256()),
+				algorithm=hashes.SHA256(),
+				label=None
+				)
+			)
+		key_file.close()
+	return (RSACipher, cipherFile, iv, tag, fileExt) 
 
 
 # AES requires plain text and ciphertext to be a multiple of 16
