@@ -1,4 +1,4 @@
-import os
+import os, constants
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
@@ -11,10 +11,10 @@ def doesKeyPairExist(file_path):
 		return True
 	return False
 
-def createPrivateKey(file_path):
+def createRSAKeys(file_path):
 	private_key = rsa.generate_private_key(
-		public_exponent=65537,
-		key_size=2048,
+		public_exponent=constants.CONST_PUBLIC_EXPONENT,
+		key_size= constants.CONST_RSA_KEY_SIZE,
 		backend=default_backend()
 		)
 
@@ -25,22 +25,20 @@ def createPrivateKey(file_path):
 
 	output_path = os.path.join(file_path, constants.CONST_PRIVATE_KEY)
 	createFile(output_path, pem)
-	return private_key
 
-
-def createPublicKey(private_key, file_path):
 	public_key = private_key.public_key()
 	pem = public_key
 	pem = public_key.public_bytes(
 		encoding=serialization.Encoding.PEM,
     	format=serialization.PublicFormat.SubjectPublicKeyInfo
     	)
+
 	output_path = os.path.join(file_path,constants.CONST_PUBLIC_KEY)
 	createFile(output_path,pem)
 
 
-def createFile(fileName, pem):
-	with open(fileName, 'wb') as file:
+def createFile(file_path, pem):
+	with open(file_path, 'wb') as file:
 		for line in pem.splitlines():
 			file.write(line)
 			file.write(b"\n")
@@ -51,5 +49,4 @@ def createKeyPair(file_path):
 		print("Key Pair already exists.\n")
 	else:
 		print("Key Pair does not exist.\nCreating Key Pair...\n")
-		private_key = createPrivateKey(file_path)
-		createPublicKey(private_key, file_path)
+		createRSAKeys(file_path)
