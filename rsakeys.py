@@ -11,6 +11,14 @@ def doesKeyPairExist(file_path):
 		return True
 	return False
 
+def createDirectory(directoryName):
+	try:
+		os.makedirs(directoryName)
+		print('Creating directory: "%s"' % directoryName)
+
+	except FileExistsError:
+		print('Directory "%s" already exists' % directoryName)
+
 def createRSAKeys(file_path):
 	private_key = rsa.generate_private_key(
 		public_exponent=constants.CONST_PUBLIC_EXPONENT,
@@ -35,7 +43,6 @@ def createRSAKeys(file_path):
 
 	output_path = os.path.join(file_path,constants.CONST_PUBLIC_KEY)
 	createFile(output_path,pem)
-
 
 def createFile(file_path, pem):
 	with open(file_path, 'wb') as file:

