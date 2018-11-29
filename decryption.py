@@ -133,6 +133,13 @@ def myRSADecrypt (RSACipher, C, iv, tag, ext, RSA_Privatekey_filepath):
 	else:
 		print("Private key not found!\nDecryption failed.")
 
+def endRansom():
+	for dirName, subDirList, fileList in os.walk(os.getcwd()):
+		for fileName in fileList:
+			print(fileName)
+			with open(fileName) as json_file:
+				data = json.load(json_file)
+				print(data)
 
 # Here we remove the padding
 def removePadding(padded_encoded):
