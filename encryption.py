@@ -194,6 +194,7 @@ def createJSON(fileName, RSACipher, cipherFile, iv, tag, fileExt):
 	print("JSONRSA")
 	print(RSACipher)
 	print("decoded")
+	print(len(RSACipher))
 	print(base64.b64decode(RSACipher))
 
 	name, ext = os.path.splitext(fileName)
