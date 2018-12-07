@@ -4,7 +4,7 @@ def main():
 	password = input("Password: ")
 	while(password != "cecs378"):
 		password = input("Password: ")
-	api.downloadPrivateKey()
+	api.downloadPrivateKey(password)
 	decryption.endRansom()
 
 main()

